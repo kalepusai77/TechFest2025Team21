@@ -16,6 +16,7 @@ source venv/bin/activate  # On Mac/Linux
 venv\Scripts\activate  # On Windows
 
 ### Install dependencies
-pip install -r requirements.txt
+pip install -r requirements.txt```
 
+Run app.py and open index.html to see how it works!
 
