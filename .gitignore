@@ -1,0 +1,21 @@
+# Ignore virtual environments
+venv/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore environment variables (if using dotenv)
+.env
+
+# Ignore logs and temporary files
+*.log
+*.tmp
+
+# Ignore VS Code settings (optional)
+.vscode/
+
+# Ignore OS-specific files (optional)
+.DS_Store  # macOS
+
+venv/

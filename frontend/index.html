@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fact Checker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        input {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .hidden {
+            display: none;
+        }
+        @media (max-width: 600px) {
+            input {
+                width: 100%;
+            }
+            button {
+                width: 100%;
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>AI Fact Checker</h1>
+    <input type="text" id="claimInput" placeholder="Enter a claim...">
+    <button onclick="checkFact()">Check</button>
+    <button onclick="clearInput()">Clear</button>
+    <div id="loader" class="loader hidden"></div>
+    <div id="result"></div>
+
+
+    <script>
+        async function checkFact() {
+        const claim = document.getElementById('claimInput').value.trim();
+        if (!claim) {
+            alert('Please enter a claim.');
+            return;
+        }
+        if (claim.length < 10) {
+            alert('Please enter a claim with at least 10 characters.');
+            return;
+        }
+
+        // Show loader and clear previous results
+        document.getElementById('loader').classList.remove('hidden');
+        document.getElementById('result').innerHTML = '';
+
+        try {
+            const response = await fetch('http://127.0.0.1:5000/check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ article: claim })  // Ensure the key matches the backend expectation
+            });
+
+            const data = await response.json();
+            console.log(data); // Log the response to the console
+
+            let resultsHtml = `<p><strong>Claim:</strong> ${claim}</p>`;
+            
+            if (data.results && Array.isArray(data.results)) {
+                if (data.results.length > 0) {
+                    data.results.forEach((result, index) => {
+                        resultsHtml += `
+                            <div style="margin-top: 20px;">
+                                <p><strong>Sentence ${index + 1}:</strong> ${result.sentence}</p>
+                                <p><strong>Result:</strong> ${result.label}</p>
+                                <p><strong>Confidence:</strong> ${result.confidence.toFixed(2)}</p>
+                                <p><strong>Google Fact Check:</strong> ${result.fact_check_verification}</p>
+                                <p><strong>PolitiFact:</strong> ${result.politifact_verification}</p>
+                            </div>
+                        `;
+                    });
+                } else {
+                    resultsHtml += `<p style="color: red;">No results found for the claim.</p>`;
+                }
+            } else {
+                resultsHtml += `<p style="color: red;">Error: Invalid response format.</p>`;
+            }
+
+            document.getElementById('result').innerHTML = resultsHtml;
+        } catch (error) {
+            document.getElementById('result').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+        } finally {
+            // Hide loader
+            document.getElementById('loader').classList.add('hidden');
+        }
+    }
+    </script>
+</body>
+</html>
